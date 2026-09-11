@@ -24,7 +24,7 @@ function normalizeCandidate(item) {
     permissions: Array.isArray(value.permissions) && value.permissions.length ? value.permissions : ["未知"],
     evidence: Array.isArray(value.evidence) && value.evidence.length ? value.evidence : ["未知"],
     limitations: Array.isArray(value.limitations) && value.limitations.length ? value.limitations : ["未知"],
-    installPrompt: value.installPrompt || `请安装 Skill：${value.name || "未知"}。来源：${value.sourceUrl || "未知"}。安装前请核验来源、源码、版本、依赖、权限和安全风险，未经我确认不要执行高风险操作。`
+    installCommand: value.installCommand || "需按来源页手动安装"
   };
 }
 
@@ -41,13 +41,15 @@ function escapeHtml(value) {
 
 function renderCandidates(candidates, mode = "markdown") {
   const items = prepareCandidates(candidates);
+  const headers = ["候选 Skill", "功能简介", "匹配度", "信任度", "安全风险", "来源", "关键权限/行为", "推荐结论", "安装命令"];
   if (mode === "html") {
-    return items.map(item => `<article class="skill-result"><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.description)}</p><dl><dt>匹配度</dt><dd>${item.matchScore}</dd><dt>信任度</dt><dd>${escapeHtml(item.trustLevel)}</dd><dt>安全风险</dt><dd>${escapeHtml(item.riskLevel)}</dd><dt>来源</dt><dd><a href="${escapeHtml(item.sourceUrl)}">${escapeHtml(item.sourceUrl)}</a></dd><dt>关键权限/行为</dt><dd>${item.permissions.map(escapeHtml).join("、")}</dd><dt>证据限制</dt><dd>${item.limitations.map(escapeHtml).join("、")}</dd></dl><button type="button" data-install-prompt="${escapeHtml(item.installPrompt)}">复制给 AI 安装</button></article>`).join("\n");
+    const head = `<table><thead><tr>${headers.map(header => `<th>${escapeHtml(header)}</th>`).join("")}</tr></thead><tbody>`;
+    const rows = items.map(item => `<tr><td>${escapeHtml(item.name)}</td><td>${escapeHtml(item.description)}</td><td>${item.matchScore}</td><td>${escapeHtml(item.trustLevel)}</td><td>${escapeHtml(item.riskLevel)}</td><td><a href="${escapeHtml(item.sourceUrl)}">${escapeHtml(item.sourceUrl)}</a></td><td>${item.permissions.map(escapeHtml).join("、")}</td><td>${escapeHtml(item.recommendation)}</td><td><code>${escapeHtml(item.installCommand)}</code></td></tr>`).join("");
+    return `${head}${rows}</tbody></table>`;
   }
-  const header = "| 候选 Skill | 匹配度 | 信任度 | 安全风险 | 来源 | 关键权限/行为 | 结论 |\n|---|---:|---|---|---|---|---|";
-  const rows = items.map(item => `| ${item.name} | ${item.matchScore} | ${item.trustLevel} | ${item.riskLevel} | [来源](${item.sourceUrl}) | ${item.permissions.join("、")} | ${item.recommendation} |`);
-  const prompts = items.map(item => `**${item.name}**\n\n<button type="button" data-install-prompt="${escapeHtml(item.installPrompt)}">复制给 AI 安装</button>\n\n\`\`\`text\n${item.installPrompt}\n\`\`\``);
-  return [header, ...rows, "", ...prompts].join("\n");
+  const header = `| ${headers.join(" | ")} |\n|${headers.map((_, index) => index === 2 ? "---:" : "---").join("|")}|`;
+  const rows = items.map(item => `| ${item.name} | ${item.description} | ${item.matchScore} | ${item.trustLevel} | ${item.riskLevel} | [来源](${item.sourceUrl}) | ${item.permissions.join("、")} | ${item.recommendation} | \`${item.installCommand}\` |`);
+  return [header, ...rows].join("\n");
 }
 
 if (typeof module !== "undefined") {

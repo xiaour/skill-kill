@@ -18,7 +18,7 @@
     "permissions",
     "evidence",
     "limitations",
-    "installPrompt"
+    "installCommand"
   ],
   "properties": {
     "name": { "type": "string" },
@@ -35,6 +35,6 @@
     "permissions": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
     "evidence": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
     "limitations": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
-    "installPrompt": { "type": "string" }
+    "installCommand": { "type": "string" }
   }
 }
